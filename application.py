@@ -37,6 +37,7 @@ def login():
         if session.get("user") is None:
             return render_template("login.html")
         else:
+            # redirect user to index if they got here somehow while logged in
             flash("You are already logged in.")
             return redirect(url_for("index"))
             
@@ -45,10 +46,12 @@ def login():
         password = request.form.get("password")
         user = db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).fetchone()
         
+        # fail to login if users table doesn't contain this username, or the password doesn't verify
         if user is None or not pbkdf2_sha256.verify(password, user.password):
             flash("Incorrect username or password.")
             return render_template("login.html")
         else:
+            # on success, add username to the session as "user" to designate logged in status
             session["user"] = username
             flash("You have successfully logged in.")
             return redirect(url_for("index"))
@@ -68,14 +71,17 @@ def signup():
             flash("Your passwords didn't match.")
             return render_template("signup.html")
         else:
+            # hash the password and attempt to insert it into the users table
             passhash = pbkdf2_sha256.hash(password)
             try:
                 db.execute("INSERT INTO users (username, password) VALUES (:username, :passhash)", {"username": username, "passhash": passhash})
                 db.commit()
             except:
+                # if there's an error, it's (probably) because the username already exists in the table
                 flash("That username already exists. Please select a different one.")
                 return render_template("signup.html")
             
+            # could also just directly have them be logged in, but this should help people remember passwords?
             flash("Congratulations, you have created your account. Now please log in.")
             return redirect(url_for("login"))
 
