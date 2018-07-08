@@ -4,7 +4,8 @@
     <meta charset="utf-8" />
     <title>{% block title %}{% endblock %} - Rainy Day</title>
     
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous" />
+    {% block css %}{% endblock %}
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -12,20 +13,19 @@
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-    
+      
+      {% if logged_in %}
       <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
-          <a class="nav-link" href="#">Sign Up</span></a>
-        </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Log In</a>
+          <a class="nav-link" href="#">Log Out</a>
         </li>
       </ul>
       
       <form class="form-inline my-2 my-lg-0">
-        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        <input class="form-control mr-sm-2" type="search" placeholder="Zip Code" aria-label="Zip Code">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Check Weather</button>
       </form>
+      {% endif %}
     </nav>
     {% block content %}{% endblock %}
   </body>
