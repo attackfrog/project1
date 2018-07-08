@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, session, render_template
+from flask import Flask, session, render_template, request, redirect, url_for
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -27,4 +27,28 @@ db = scoped_session(sessionmaker(bind=engine))
 
 @app.route("/")
 def index():
-    return render_template("index.html", logged_in=True)
+    return render_template("index.html", logged_in=False)
+
+
+@app.route("/login", methods=["POST", "GET"])
+def login():
+    if request.method == "GET":
+        if session.get("user") is None:
+            return render_template("login.html")
+        else:
+            return redirect(url_for('index'))
+            
+    # if request.method == "POST":
+        # TODO: check db and add to session if correct
+
+
+@app.route("/signup", methods=["POST", "GET"])
+def signup():
+    if request.method == "GET":
+        return render_template("signup.html")
+        
+
+@app.route("/logout")
+def logout():
+    # TODO: remove user from session
+    return redirect(url_for('index'))

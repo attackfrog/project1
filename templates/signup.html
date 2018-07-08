@@ -1,0 +1,23 @@
+{% extends "basic.html" %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h3>Sign up for Rainy Day</h3>
+    <div class="card">
+        <div class="card-body">
+            <form>
+                <input name="username" type="text" class="form-control form-control-lg main-textbox" placeholder="Username" aria-label="Username">
+                <input name="password" type="password" class="form-control form-control-lg main-textbox" placeholder="Password" aria-label="Password">
+                <input name="passconfirm" type="password" class="form-control form-control-lg main-textbox" placeholder="Confirm Password" aria-label="Confirm Password">
+                <button type="submit" class="btn btn-primary btn-block btn-lg">Sign Up</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
