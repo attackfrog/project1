@@ -27,7 +27,8 @@ db = scoped_session(sessionmaker(bind=engine))
 
 @app.route("/")
 def index():
-    return render_template("index.html", logged_in=False)
+    logged_in = session.get("user") is not None
+    return render_template("index.html", logged_in=logged_in)
 
 
 @app.route("/login", methods=["POST", "GET"])
@@ -39,8 +40,18 @@ def login():
             flash("You are already logged in.")
             return redirect(url_for("index"))
             
-    # if request.method == "POST":
-        # TODO: check db and add to session if correct
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        user = db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).fetchone()
+        
+        if user is None or not pbkdf2_sha256.verify(password, user.password):
+            flash("Incorrect username or password.")
+            return render_template("login.html")
+        else:
+            session["user"] = username
+            flash("You have successfully logged in.")
+            return redirect(url_for("index"))
 
 
 @app.route("/signup", methods=["POST", "GET"])
@@ -71,6 +82,6 @@ def signup():
 
 @app.route("/logout")
 def logout():
-    # TODO: remove user from session
+    session["user"] = None
     flash("You have been logged out.")
     return redirect(url_for("index"))
