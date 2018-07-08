@@ -44,7 +44,7 @@ def login():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-        user = db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).fetchone()
+        user = db.execute("SELECT * FROM users WHERE username = :username;", {"username": username}).fetchone()
         
         # fail to login if users table doesn't contain this username, or the password doesn't verify
         if user is None or not pbkdf2_sha256.verify(password, user.password):
@@ -74,7 +74,7 @@ def signup():
             # hash the password and attempt to insert it into the users table
             passhash = pbkdf2_sha256.hash(password)
             try:
-                db.execute("INSERT INTO users (username, password) VALUES (:username, :passhash)", {"username": username, "passhash": passhash})
+                db.execute("INSERT INTO users (username, password) VALUES (:username, :passhash);", {"username": username, "passhash": passhash})
                 db.commit()
             except:
                 # if there's an error, it's (probably) because the username already exists in the table
