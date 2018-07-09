@@ -1,0 +1,29 @@
+{% extends "basic.html" %}
+
+{% block title %}Search: {{ query }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h3>Search Results</h3>
+    <p class="center">You searched for "{{ query }}".</p>
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <th>Zipcode</th>
+                <th>City Name</th>
+                <th>Population</th>
+            </tr>
+            {% for result in results %}
+                <tr>
+                    <td>{{ result[0] }}</td>
+                    <td>{{ result[1]|capitalize }}, {{ result[2]|upper }}</td>
+                    <td>{{ result[3] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

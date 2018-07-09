@@ -91,3 +91,25 @@ def logout():
     session["user"] = None
     flash("You have been logged out.")
     return redirect(url_for("index"))
+
+
+@app.route("/search")
+def search():
+    logged_in = session.get("user") is not None
+    if not logged_in:
+        flash("You must be logged in to search.")
+        return redirect(url_for("login"))
+    
+    query = request.args.get("loc")
+    if not query:
+        return redirect(url_for('index'))
+    
+    querycity = f"%{query.upper()}%"
+    results = db.execute("SELECT zipcode, city, state, pop FROM locations WHERE zipcode = :query OR city LIKE :querycity;", {"query": query, "querycity": querycity})
+    
+    resultslist = []
+    # debug code
+    for result in results:
+        resultslist.append(result)
+    
+    return render_template("search.html", results=resultslist, query=query, logged_in=logged_in)
