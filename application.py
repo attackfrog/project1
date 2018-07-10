@@ -108,7 +108,6 @@ def search():
     results = db.execute("SELECT zipcode, city, state, pop FROM locations WHERE zipcode = :query OR city LIKE :querycity;", {"query": query, "querycity": querycity})
     
     resultslist = []
-    # debug code
     for result in results:
         resultslist.append(result)
     
