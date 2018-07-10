@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from passlib.hash import pbkdf2_sha256
+import requests
 
 app = Flask(__name__)
 
@@ -74,7 +75,8 @@ def signup():
             # hash the password and attempt to insert it into the users table
             passhash = pbkdf2_sha256.hash(password)
             try:
-                db.execute("INSERT INTO users (username, password) VALUES (:username, :passhash);", {"username": username, "passhash": passhash})
+                db.execute("INSERT INTO users (username, password) VALUES (:username, :passhash);",
+                           {"username": username, "passhash": passhash})
                 db.commit()
             except:
                 # if there's an error, it's (probably) because the username already exists in the table
@@ -105,10 +107,39 @@ def search():
         return redirect(url_for('index'))
     
     querycity = f"%{query.upper()}%"
-    results = db.execute("SELECT zipcode, city, state, pop FROM locations WHERE zipcode = :query OR city LIKE :querycity;", {"query": query, "querycity": querycity})
+    results = db.execute("SELECT zipcode, city, state, pop FROM locations WHERE zipcode = :query OR city LIKE :querycity;", 
+                         {"query": query, "querycity": querycity})
     
     resultslist = []
     for result in results:
         resultslist.append(result)
     
     return render_template("search.html", results=resultslist, query=query, logged_in=logged_in)
+
+
+@app.route("/weather/<string:zipcode>")
+def weather(zipcode):
+    logged_in = session.get("user") is not None
+    if not logged_in:
+        flash("You must be logged in to view weather conditions.")
+        redirect(url_for("index"))
+    try:
+        int(zipcode)
+        assert len(zipcode) == 5
+    except:
+        flash("That's not a valid zip code.")
+        redirect(url_for("index"))
+    
+    # get info for zip code
+    zipinfo = db.execute("SELECT * FROM locations WHERE zipcode = :zipcode", {"zipcode": zipcode})
+    if zipinfo is None:
+        flash("That zip code is not in our database.")
+        redirect(url_for("index"))
+    
+    API_KEY = os.getenv("DARKSKY_KEY")
+    try:
+        response = requests.get(f"https://api.darksky.net/forecast/{API_KEY}/{zipinfo.lat},{zipinfo.long}")
+        weather = response.json()
+    except:
+        flash("Failed to communicate with the Dark Sky API.")
+    
