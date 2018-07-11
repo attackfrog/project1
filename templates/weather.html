@@ -51,6 +51,30 @@
         
         <div class="col-md-6">
             <h3>Comments</h3>
+            <div class="card">
+                <div class="card-header">
+                    Submit new comment:
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('checkin') }}" method="POST">
+                        <!-- long line because text areas render extra whitespace -->
+                        <textarea class="form-control main-textbox" name="comment" rows="3" {% if posted %}disabled{% endif %}>{% if posted %}You can only submit one comment per day. Come back tomorrow!{% endif %}</textarea>
+                        <input type="hidden" name="zipcode" value="{{ zipinfo[0] }}" />
+                        <button type="submit" class="btn btn-primary" {% if posted %}disabled{% endif %}>Submit</button>
+                    </form>
+                </div>
+            </div>
+            <hr />
+            {% for comment in comments %}
+                <div class="card">
+                    <div class="card-body">
+                        <blockquote class="blockquote mb-0">
+                            <p>{{ comment.comment }}</p>
+                            <footer class="blockquote-footer"><strong>{{ comment.username }}</strong> on {{ comment.date }}</footer>
+                        </blockquote>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
 </div>

@@ -7,6 +7,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 from passlib.hash import pbkdf2_sha256
 import requests
+from datetime import date
 
 app = Flask(__name__)
 
@@ -62,7 +63,9 @@ def login():
 def signup():
     if request.method == "GET":
         return render_template("signup.html")
-        
+    
+    # This route sometimes fails on post and I can't figure out why...
+    # It just fails to respond, and then succeeds with the exact same request later
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
@@ -123,10 +126,7 @@ def weather(zipcode):
     if not logged_in:
         flash("You must be logged in to view weather conditions.")
         return redirect(url_for("index"))
-    try:
-        int(zipcode)
-        assert len(zipcode) == 5
-    except:
+    if not validate_zipcode(zipcode):
         flash("That's not a valid zip code.")
         return redirect(url_for("index"))
     
@@ -138,14 +138,64 @@ def weather(zipcode):
     
     API_KEY = os.getenv("DARKSKY_KEY")
     try:
-        # zipinfo[3] is latitue, zipinfo[4] is longitude
+        # zipinfo[3] is latitude, zipinfo[4] is longitude
         response = requests.get(f"https://api.darksky.net/forecast/{API_KEY}/{zipinfo[3]},{zipinfo[4]}")
         weather = response.json()
     except:
         flash("Failed to communicate with the Dark Sky API.")
         return redirect(url_for("index"))
     
-    # TODO: query db for comments
+    comments = db.execute("SELECT * FROM checkins WHERE zipcode = :zipcode ORDER BY date DESC", {"zipcode": zipcode}).fetchall()
+    # check if the user has commented today
+    user = session.get("user")
+    today = date.today()
+    posted = False
+    for comment in comments:
+        print(comment)
+        if comment.username == user:
+            if comment.date == today:
+                posted = True
+                break
     
-    return render_template("weather.html", zipinfo=zipinfo, weather=weather, logged_in=logged_in)
+    return render_template("weather.html", zipinfo=zipinfo, weather=weather, 
+                            comments=comments, posted=posted, logged_in=logged_in)
+    
+
+@app.route("/checkin", methods=["POST"])
+def checkin():
+    username = session.get("user")
+    if username is None:
+        flash("You must be logged in to submit a comment.")
+        return redirect(url_for("index"))
+    
+    zipcode = request.form.get("zipcode")
+    comment = request.form.get("comment")
+    today = date.today()
+    
+    if not validate_zipcode(zipcode):
+        flash("You tried to submit a comment for an invalid zipcode.")
+        return redirect(url_for("index"))
+    
+    if len(comment) < 1:
+        flash("You can't submit a blank comment.")
+    
+    try:
+        db.execute("INSERT INTO checkins (zipcode, username, comment, date) VALUES (:zipcode, :username, :comment, :today);",
+                    {"zipcode": zipcode, "username": username, "comment": comment, "today": today})
+        db.commit()
+    except:
+        flash("Error submitting comment. Please try again later.")
+    
+    return redirect(url_for('weather', zipcode=zipcode))
+
+
+
+def validate_zipcode(zipcode):
+    try:
+        int(zipcode)
+        assert len(zipcode) == 5
+    except:
+        return False
+    
+    return True
     
