@@ -16,12 +16,14 @@
                 <th>Zipcode</th>
                 <th>City Name</th>
                 <th>Population</th>
+                <th>Details</th>
             </tr>
             {% for result in results %}
                 <tr>
                     <td>{{ result[0] }}</td>
                     <td>{{ result[1]|capitalize }}, {{ result[2]|upper }}</td>
                     <td>{{ result[3] }}</td>
+                    <td><a class="btn btn-primary" href="{{ url_for('weather', zipcode=result[0]) }}" role="button">View Weather</a></td>
                 </tr>
             {% endfor %}
         </tbody>

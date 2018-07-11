@@ -122,24 +122,30 @@ def weather(zipcode):
     logged_in = session.get("user") is not None
     if not logged_in:
         flash("You must be logged in to view weather conditions.")
-        redirect(url_for("index"))
+        return redirect(url_for("index"))
     try:
         int(zipcode)
         assert len(zipcode) == 5
     except:
         flash("That's not a valid zip code.")
-        redirect(url_for("index"))
+        return redirect(url_for("index"))
     
     # get info for zip code
-    zipinfo = db.execute("SELECT * FROM locations WHERE zipcode = :zipcode", {"zipcode": zipcode})
+    zipinfo = db.execute("SELECT * FROM locations WHERE zipcode = :zipcode", {"zipcode": zipcode}).fetchone()
     if zipinfo is None:
         flash("That zip code is not in our database.")
-        redirect(url_for("index"))
+        return redirect(url_for("index"))
     
     API_KEY = os.getenv("DARKSKY_KEY")
     try:
-        response = requests.get(f"https://api.darksky.net/forecast/{API_KEY}/{zipinfo.lat},{zipinfo.long}")
+        # zipinfo[3] is latitue, zipinfo[4] is longitude
+        response = requests.get(f"https://api.darksky.net/forecast/{API_KEY}/{zipinfo[3]},{zipinfo[4]}")
         weather = response.json()
     except:
         flash("Failed to communicate with the Dark Sky API.")
+        return redirect(url_for("index"))
+    
+    # TODO: query db for comments
+    
+    return render_template("weather.html", zipinfo=zipinfo, weather=weather, logged_in=logged_in)
     

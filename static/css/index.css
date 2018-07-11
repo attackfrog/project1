@@ -1,6 +1,9 @@
 .card {
-    width: 40%; 
     margin: 2rem auto;
+}
+
+.form-card {
+    width: 40%; 
 }
 
 .main-textbox {

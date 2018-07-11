@@ -1,0 +1,57 @@
+{% extends "basic.html" %}
+
+{% block title %}{{ zipinfo[1]|capitalize }}, {{ zipinfo[2]|upper }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Weather info for {{ zipinfo[1]|capitalize }}, {{ zipinfo[2]|upper }}</h3>
+            <div class="card">
+                <div class="card-header">
+                    Current Conditions
+                </div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ weather.currently.summary }}</h4>
+                    <p class="card-text">Temperature: <strong>{{ weather.currently.temperature }}°F</strong> 
+                        <em>(feels like {{ weather.currently.apparentTemperature }}°F)</em><br />
+                    Humidity: <strong>{{ weather.currently.humidity }}%</strong> <br />
+                    Dew Point: <strong>{{ weather.currently.dewPoint }}°F</strong> <br />
+                    Atmospheric Pressure: <strong>{{ weather.currently.pressure }} mb</strong> <br />
+                    Wind Speed: <strong>{{ weather.currently.windSpeed }} mph</strong> 
+                        <em>(gusting to {{ weather.currently.windGust }} mph)</em><br />
+                    UV Index: <strong>{{ weather.currently.uvIndex }}</strong>
+                    </p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    Today's Forecast
+                </div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ weather.daily.data[0].summary }}</h4>
+                    <p class="card-text">Highest Temperature: <strong>{{ weather.daily.data[0].temperatureHigh }}°F</strong> 
+                        <em>(feels like {{ weather.daily.data[0].apparentTemperatureMax }}°F)</em><br />
+                    Lowest Temperature: <strong>{{ weather.daily.data[0].temperatureLow }}°F</strong> 
+                        <em>(feels like {{ weather.daily.data[0].apparentTemperatureMin }}°F)</em><br />
+                    Humidity: <strong>{{ weather.daily.data[0].humidity }}%</strong> <br />
+                    Dew Point: <strong>{{ weather.daily.data[0].dewPoint }}°F</strong> <br />
+                    Atmospheric Pressure: <strong>{{ weather.daily.data[0].pressure }} mb</strong> <br />
+                    Wind Speed: <strong>{{ weather.daily.data[0].windSpeed }} mph</strong> 
+                        <em>(gusting to {{ weather.daily.data[0].windGust }} mph)</em><br />
+                    UV Index: <strong>{{ weather.daily.data[0].uvIndex }}</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <h3>Comments</h3>
+        </div>
+    </div>
+</div>
+{% endblock %}
