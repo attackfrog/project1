@@ -69,6 +69,7 @@ def signup():
         password = request.form.get("password")
         passconfirm = request.form.get("passconfirm")
         
+        # validate user input
         if not username:
             flash("You must provide a username.")
             return render_template("signup.html")
@@ -116,10 +117,12 @@ def search():
     if not query:
         return redirect(url_for('index'))
     
+    # convert query to all caps so it will match the DB entry if it's a city name (also add %'s for SQL LIKE)
     querycity = f"%{query.upper()}%"
     results = db.execute("SELECT zipcode, city, state, pop FROM locations WHERE zipcode = :query OR city LIKE :querycity;", 
                          {"query": query, "querycity": querycity})
     
+    # convert results list to a simple array so Jinja will work with it
     resultslist = []
     for result in results:
         resultslist.append(result)
@@ -179,12 +182,15 @@ def checkin():
     comment = request.form.get("comment")
     today = date.today()
     
+    # this doesn't check whether the zip code is in the database, but if a user submits a comment for an
+    # invalid zip code somehow, it will just never be displayed, which is probably okay
     if not validate_zipcode(zipcode):
         flash("You tried to submit a comment for an invalid zipcode.")
         return redirect(url_for("index"))
     
     if len(comment) < 1:
         flash("You can't submit a blank comment.")
+        return redirect(url_for('weather', zipcode=zipcode))
     
     try:
         db.execute("INSERT INTO checkins (zipcode, username, comment, date) VALUES (:zipcode, :username, :comment, :today);",
@@ -202,19 +208,22 @@ def api(zipcode):
         raise InvalidUsage("The provided zipcode is invalid.", status_code=400)
     
     try:
-        # TODO: can this be merged into one database query?
         zipdata = db.execute("SELECT * FROM locations WHERE zipcode = :zipcode;", {"zipcode": zipcode}).fetchone()
         checkincount = db.execute("SELECT COUNT(*) FROM checkins WHERE zipcode = :zipcode", {"zipcode": zipcode}).fetchone()
     except:
         raise InvalidUsage("The database failed to respond properly to the request.", status_code=500)
+    
+    if zipdata == None:
+        raise InvalidUsage("That zipcode is not in our database.", status_code=404)
 
-    response = {"place_name": zipdata.city.capitalize(), "state": zipdata.state, "latitude": float(zipdata.lat), 
+    response = {"place_name": zipdata.city.title(), "state": zipdata.state, "latitude": float(zipdata.lat), 
                 "longitude": float(zipdata.long), "zip": zipdata.zipcode, "population": int(zipdata.pop), 
                 "check_ins": int(checkincount[0])}
     return jsonify(response)
     
 
 # the class and error handler below are from http://flask.pocoo.org/docs/1.0/patterns/apierrors/
+# they return a HTTP status code and JSON-formatted error message
 class InvalidUsage(Exception):
     status_code = 400
 
@@ -237,6 +246,7 @@ def handle_invalid_usage(error):
     return response
 
 
+# An overly simple zipcode validation function
 def validate_zipcode(zipcode):
     try:
         int(zipcode)
