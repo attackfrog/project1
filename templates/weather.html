@@ -1,6 +1,6 @@
 {% extends "basic.html" %}
 
-{% block title %}{{ zipinfo[1]|capitalize }}, {{ zipinfo[2]|upper }}{% endblock %}
+{% block title %}{{ zipinfo[1]|title }}, {{ zipinfo[2]|upper }}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
@@ -10,7 +10,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-6">
-            <h3>Weather info for {{ zipinfo[1]|capitalize }}, {{ zipinfo[2]|upper }}</h3>
+            <h3>Weather info for {{ zipinfo[1]|title }}, {{ zipinfo[2]|upper }}</h3>
             <div class="card">
                 <div class="card-header">
                     Current Conditions
@@ -66,7 +66,7 @@
                     </p>
                 </div>
             </div>
-            <p class="lead center">{{ zipinfo[1]|capitalize }}, {{ zipinfo[2]|upper }} {{ zipinfo[0] }}<br />
+            <p class="lead center">{{ zipinfo[1]|title }}, {{ zipinfo[2]|upper }} {{ zipinfo[0] }}<br />
             Latitude {{ zipinfo[3] }} | Longitude {{ zipinfo[4] }}<br />
             Population: {{ zipinfo[5] }}</p>
         </div>
