@@ -19,7 +19,7 @@
                     <h4 class="card-title">{{ weather.currently.summary }}</h4>
                     <p class="card-text">Temperature: <strong>{{ weather.currently.temperature }}°F</strong> 
                         <em>(feels like {{ weather.currently.apparentTemperature }}°F)</em><br />
-                    Humidity: <strong>{{ weather.currently.humidity }}%</strong> <br />
+                    Humidity: <strong>{{ (weather.currently.humidity * 100)|int }}%</strong> <br />
                     Dew Point: <strong>{{ weather.currently.dewPoint }}°F</strong> <br />
                     Atmospheric Pressure: <strong>{{ weather.currently.pressure }} mb</strong> <br />
                     Wind Speed: <strong>{{ weather.currently.windSpeed }} mph</strong> 
@@ -38,7 +38,7 @@
                         <em>(feels like {{ weather.daily.data[0].apparentTemperatureMax }}°F)</em><br />
                     Lowest Temperature: <strong>{{ weather.daily.data[0].temperatureLow }}°F</strong> 
                         <em>(feels like {{ weather.daily.data[0].apparentTemperatureMin }}°F)</em><br />
-                    Humidity: <strong>{{ weather.daily.data[0].humidity }}%</strong> <br />
+                    Humidity: <strong>{{ (weather.daily.data[0].humidity * 100)|int }}%</strong> <br />
                     Dew Point: <strong>{{ weather.daily.data[0].dewPoint }}°F</strong> <br />
                     Atmospheric Pressure: <strong>{{ weather.daily.data[0].pressure }} mb</strong> <br />
                     Wind Speed: <strong>{{ weather.daily.data[0].windSpeed }} mph</strong> 
@@ -47,10 +47,32 @@
                     </p>
                 </div>
             </div>
+            <div class="card">
+                <div class="card-header">
+                    Tomorrow's Forecast
+                </div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ weather.daily.data[1].summary }}</h4>
+                    <p class="card-text">Highest Temperature: <strong>{{ weather.daily.data[1].temperatureHigh }}°F</strong> 
+                        <em>(feels like {{ weather.daily.data[1].apparentTemperatureMax }}°F)</em><br />
+                    Lowest Temperature: <strong>{{ weather.daily.data[1].temperatureLow }}°F</strong> 
+                        <em>(feels like {{ weather.daily.data[1].apparentTemperatureMin }}°F)</em><br />
+                    Humidity: <strong>{{ (weather.daily.data[1].humidity * 111)|int }}%</strong> <br />
+                    Dew Point: <strong>{{ weather.daily.data[1].dewPoint }}°F</strong> <br />
+                    Atmospheric Pressure: <strong>{{ weather.daily.data[1].pressure }} mb</strong> <br />
+                    Wind Speed: <strong>{{ weather.daily.data[1].windSpeed }} mph</strong> 
+                        <em>(gusting to {{ weather.daily.data[1].windGust }} mph)</em><br />
+                    UV Index: <strong>{{ weather.daily.data[1].uvIndex }}</strong>
+                    </p>
+                </div>
+            </div>
+            <p class="lead center">{{ zipinfo[1]|capitalize }}, {{ zipinfo[2]|upper }} {{ zipinfo[0] }}<br />
+            Latitude {{ zipinfo[3] }} | Longitude {{ zipinfo[4] }}<br />
+            Population: {{ zipinfo[5] }}</p>
         </div>
         
         <div class="col-md-6">
-            <h3>Comments</h3>
+            <h3>Comments ({{ comments|length }})</h3>
             <div class="card">
                 <div class="card-header">
                     Submit new comment:

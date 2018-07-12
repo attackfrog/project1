@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, session, render_template, request, redirect, url_for, flash
+from flask import Flask, session, render_template, request, redirect, url_for, flash, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -64,14 +64,21 @@ def signup():
     if request.method == "GET":
         return render_template("signup.html")
     
-    # This route sometimes fails on post and I can't figure out why...
-    # It just fails to respond, and then succeeds with the exact same request later
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
         passconfirm = request.form.get("passconfirm")
         
-        if password != passconfirm:
+        if not username:
+            flash("You must provide a username.")
+            return render_template("signup.html")
+        elif not password:
+            flash("You must provide a password.")
+            return render_template("signup.html")
+        elif not passconfirm:
+            flash("You must enter your password twice.")
+            return render_template("signup.html")
+        elif password != passconfirm:
             flash("Your passwords didn't match.")
             return render_template("signup.html")
         else:
@@ -188,6 +195,46 @@ def checkin():
     
     return redirect(url_for('weather', zipcode=zipcode))
 
+
+@app.route("/api/<string:zipcode>")
+def api(zipcode):
+    if not validate_zipcode(zipcode):
+        raise InvalidUsage("The provided zipcode is invalid.", status_code=400)
+    
+    try:
+        # TODO: can this be merged into one database query?
+        zipdata = db.execute("SELECT * FROM locations WHERE zipcode = :zipcode;", {"zipcode": zipcode}).fetchone()
+        checkincount = db.execute("SELECT COUNT(*) FROM checkins WHERE zipcode = :zipcode", {"zipcode": zipcode}).fetchone()
+    except:
+        raise InvalidUsage("The database failed to respond properly to the request.", status_code=500)
+
+    response = {"place_name": zipdata.city.capitalize(), "state": zipdata.state, "latitude": float(zipdata.lat), 
+                "longitude": float(zipdata.long), "zip": zipdata.zipcode, "population": int(zipdata.pop), 
+                "check_ins": int(checkincount[0])}
+    return jsonify(response)
+    
+
+# the class and error handler below are from http://flask.pocoo.org/docs/1.0/patterns/apierrors/
+class InvalidUsage(Exception):
+    status_code = 400
+
+    def __init__(self, message, status_code=None, payload=None):
+        Exception.__init__(self)
+        self.message = message
+        if status_code is not None:
+            self.status_code = status_code
+        self.payload = payload
+    
+    def to_dict(self):
+        rv = dict(self.payload or ())
+        rv['error'] = self.message
+        return rv
+
+@app.errorhandler(InvalidUsage)
+def handle_invalid_usage(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    return response
 
 
 def validate_zipcode(zipcode):
